@@ -110,4 +110,5 @@ jobs:
 
       - name: Explain why the release build was skipped
         if: env.HAS_RELEASE_SIGNING != 'true'
+        working-directory: ${{ github.workspace }}
         run: echo "Signed release skipped because one or more Android signing secrets are not configured."
