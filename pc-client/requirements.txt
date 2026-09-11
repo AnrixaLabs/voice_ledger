@@ -1,0 +1,7 @@
+PySide6>=6.7
+requests>=2.32
+sounddevice>=0.5
+
+# Windows only - biometric_windows.py imports this lazily, so the rest
+# of the app runs fine on other platforms for development/testing.
+winsdk>=1.0.0b10; sys_platform == "win32"

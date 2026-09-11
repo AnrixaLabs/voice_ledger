@@ -1,0 +1,113 @@
+name: Android build
+
+# Produces a real, installable APK using GitHub's own runners, which
+# have the Android SDK and Google's Maven repo - neither is reachable
+# from the sandbox this app was originally scaffolded in, so this
+# workflow is the actual way to get a working .apk file.
+#
+# Debug build (no secrets configured): signed with the standard
+# Android debug key, installable via `adb install` or sideloading for
+# your own testing. NOT for Play Store or handing to other people -
+# see the release job below and android-client/README.md.
+#
+# Release build (only runs if the four secrets below are set in this
+# repo's Settings > Secrets > Actions): signed with your own keystore.
+#   ANDROID_KEYSTORE_BASE64   - `base64 -w0 your.keystore` output
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+# Generate that keystore yourself and back it up somewhere durable -
+# see the "Signing a release build" section in android-client/README.md.
+# Nobody but you should ever hold it; losing it means you can never
+# ship an update under the same app identity again.
+
+on:
+  push:
+    branches: [main]
+    paths: ["android-client/**"]
+  workflow_dispatch: {}
+
+jobs:
+  debug-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android-client
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build debug APK
+        run: gradle assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-ledger-debug-apk
+          path: android-client/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+  release-apk:
+    runs-on: ubuntu-latest
+    # GitHub does not allow secrets to be referenced directly in an `if:`
+    # expression. Expose only the boolean result through the job environment,
+    # then gate each release-only step with that non-secret value.
+    env:
+      HAS_RELEASE_SIGNING: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+    defaults:
+      run:
+        working-directory: android-client
+    steps:
+      - uses: actions/checkout@v4
+        if: env.HAS_RELEASE_SIGNING == 'true'
+
+      - uses: actions/setup-java@v4
+        if: env.HAS_RELEASE_SIGNING == 'true'
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+        if: env.HAS_RELEASE_SIGNING == 'true'
+
+      - uses: gradle/actions/setup-gradle@v4
+        if: env.HAS_RELEASE_SIGNING == 'true'
+        with:
+          gradle-version: "8.9"
+
+      - name: Restore keystore
+        if: env.HAS_RELEASE_SIGNING == 'true'
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > app/release.keystore
+
+      - name: Build signed release APK
+        if: env.HAS_RELEASE_SIGNING == 'true'
+        env:
+          VOICE_LEDGER_KEYSTORE_PATH: release.keystore
+          VOICE_LEDGER_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          VOICE_LEDGER_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          VOICE_LEDGER_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: gradle assembleRelease --no-daemon
+
+      - name: Remove keystore from the runner
+        if: always() && env.HAS_RELEASE_SIGNING == 'true'
+        run: rm -f app/release.keystore
+
+      - uses: actions/upload-artifact@v4
+        if: env.HAS_RELEASE_SIGNING == 'true'
+        with:
+          name: voice-ledger-release-apk
+          path: android-client/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      - name: Explain why the release build was skipped
+        if: env.HAS_RELEASE_SIGNING != 'true'
+        run: echo "Signed release skipped because one or more Android signing secrets are not configured."

@@ -1,0 +1,17 @@
+fastapi>=0.115
+uvicorn[standard]>=0.32
+sqlmodel>=0.0.22
+pydantic-settings>=2.6
+cryptography>=43.0
+requests>=2.32
+python-multipart>=0.0.12
+
+# Local offline speech-to-text (heavy - torch/ctranslate2). Comment out
+# if you plan to use stt_provider=azure instead.
+faster-whisper>=1.0
+
+# Only needed for free-form (single long utterance) capture mode.
+anthropic>=0.40
+
+# Dev/test only
+pytest>=8.3

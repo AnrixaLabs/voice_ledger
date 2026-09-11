@@ -1,0 +1,39 @@
+name: PC client build (Windows)
+
+# PyInstaller doesn't meaningfully cross-compile, and biometric_windows.py
+# depends on winsdk (Windows Runtime bindings for Windows Hello), which
+# only exists on real Windows - so this runs on windows-latest, a genuine
+# Windows machine, which is the only place this .exe can actually be built.
+
+on:
+  push:
+    branches: [main]
+    paths: ["pc-client/**"]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: pc-client
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller pyinstaller-hooks-contrib
+
+      - name: Build VoiceLedger.exe
+        run: pyinstaller voiceledger.spec
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-ledger-windows-exe
+          path: pc-client/dist/VoiceLedger.exe
+          if-no-files-found: error
