@@ -4,8 +4,12 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavHostController
@@ -64,12 +68,12 @@ private fun VoiceLedgerBottomBar(nav: NavHostController) {
     NavigationBar {
         NavigationBarItem(
             selected = current == "capture", onClick = { nav.navigate("capture") },
-            icon = { Icon(androidx.compose.material.icons.Icons.Filled.Mic, contentDescription = null) },
+            icon = { Icon(Icons.Filled.Mic, contentDescription = null) },
             label = { Text("Record") },
         )
         NavigationBarItem(
             selected = current == "settings", onClick = { nav.navigate("settings") },
-            icon = { Icon(androidx.compose.material.icons.Icons.Filled.Settings, contentDescription = null) },
+            icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
             label = { Text("Settings") },
         )
     }

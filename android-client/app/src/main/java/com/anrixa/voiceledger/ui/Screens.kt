@@ -7,6 +7,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -144,8 +147,7 @@ fun GuidedCaptureScreen(vm: VoiceLedgerViewModel, cacheDir: File, onAllFieldsDon
             modifier = Modifier.size(80.dp),
         ) {
             Icon(
-                imageVector = if (isRecording) androidx.compose.material.icons.Icons.Filled.Check
-                              else androidx.compose.material.icons.Icons.Filled.Mic,
+                imageVector = if (isRecording) Icons.Filled.Check else Icons.Filled.Mic,
                 contentDescription = if (isRecording) "Stop recording" else "Start recording",
             )
         }
