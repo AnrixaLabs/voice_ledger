@@ -1,3 +1,15 @@
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+keystore.properties
+
 # Server
 server/.env
 server/data/
@@ -22,4 +34,8 @@ pc-client/*.spec.bak
 pc-client/__pycache__/
 pc-client/.venv/
 
+# Editors / OS
+.idea/
+.vscode/
 .DS_Store
+Thumbs.db
