@@ -1,76 +1,68 @@
-# Voice ledger
+# Voice Ledger
 
-Speak a payment entry in Armenian — who, where, how much was paid,
-how much is still owed, and by when — confirm it with a fingerprint
-(phone) or Windows Hello (PC), and it lands in a ledger on a server
-that runs on your own machine.
+Voice-assisted payment and debt-entry system with Android, Windows, and self-hosted server components.
 
+Voice Ledger is designed to capture structured payment records in Armenian, confirm sensitive actions through device authentication, and store the resulting ledger on infrastructure controlled by the user.
+
+## Status
+
+**Functional prototype / active development.** The server and parsing/security flows have automated coverage. Client applications are buildable through the repository workflows, while hardware-dependent behavior still requires device testing.
+
+## Repository layout
+
+```text
+android-client/      Kotlin + Jetpack Compose Android client
+pc-client/           Python + PySide6 Windows client
+server/              FastAPI server and ledger storage
+docs/                architecture and security documentation
+.github/workflows/   Android and Windows CI/build workflows
 ```
-android-client/     Kotlin + Jetpack Compose phone app
-pc-client/           Python + PySide6 desktop app
-server/              Python + FastAPI local server (the ledger lives here)
-docs/                Architecture and security notes
-.github/workflows/   CI that builds a real .apk and a real .exe
-```
 
-## Get the actual app files
+## Core capabilities
 
-Neither binary can be built in a plain sandbox (no Android SDK/Google
-Maven access, no Windows machine) — that's not a permissions thing,
-it's a missing-toolchain thing. Fastest real path:
+- Armenian voice-entry workflow;
+- structured payment/debt records;
+- guided capture mode with deterministic parsing;
+- device pairing;
+- biometric-gated signing on supported clients;
+- signature verification and tamper rejection;
+- local SQLite ledger storage on the server;
+- Android and Windows client builds through GitHub Actions.
 
-1. Push this repo to GitHub.
-2. Actions tab → both workflows run automatically on push, or trigger
-   them by hand with "Run workflow":
-   - **Android build** → Artifacts → `voice-ledger-debug-apk`
-   - **PC client build (Windows)** → Artifacts → `voice-ledger-windows-exe`
-3. Download, install, done. Full detail (including how to get a
-   *signed* release APK instead of a debug one) is in each client's
-   README.
+## Capture modes
 
-If you'd rather build locally: Android Studio for the APK, or
-`pyinstaller voiceledger.spec` on an actual Windows machine for the
-.exe — also covered in those READMEs.
+### Guided mode
 
-## Start here
+The client requests fields individually and parses each answer using the local Armenian-language rules. This is the primary offline-capable workflow.
 
-- **`server/README.md`** — get the server running; this is the only
-  piece with a full, passing test suite (30 tests: the Armenian
-  number/money/date parsers, plus an end-to-end pairing + biometric-
-  style signing + tamper-rejection flow against the real app).
-- **`docs/ARCHITECTURE.md`** — how the three pieces fit together and
-  why they're built the way they are.
-- **`docs/SECURITY.md`** — what the biometric signature actually
-  protects, and what it doesn't.
-- **`android-client/README.md`** / **`pc-client/README.md`** — setup
-  for each client, how to get a real build, and an honest list of
-  what's verified vs. what needs a real-hardware test pass.
+### Free-form mode
 
-## The two capture modes
+The server includes an optional model-assisted extraction path for converting a single transcript into structured fields. This mode requires configured external AI credentials and is intentionally separated from the deterministic guided flow.
 
-- **Guided (default)**: the app asks for one field at a time — "say
-  the name", "say how much was paid" — and parses each answer with a
-  small rule-based Armenian parser. Fully offline-capable, no API
-  cost, and this is the path with real test coverage.
-- **Free-form**: say everything in one breath; the transcript is sent
-  to Claude to extract all fields at once. Needs an internet
-  connection and an Anthropic API key. Falls back to guided mode if
-  neither is available. Only the server-side extraction is built;
-  neither client has a free-form UI yet (see their READMEs).
+## Getting started
 
-## What's genuinely done vs. what's next
+Start with the component documentation:
 
-**Solid and tested:** the security model (device pairing, biometric-
-gated signing, signature verification for both Android's EC keys and
-Windows Hello's RSA keys, tamper rejection), the Armenian NLU
-parsers, the SQLite ledger.
+- `server/README.md` — server setup and tests;
+- `android-client/README.md` — Android development and build instructions;
+- `pc-client/README.md` — Windows client setup and packaging;
+- `docs/ARCHITECTURE.md` — system design;
+- `docs/SECURITY.md` — security model and limitations.
 
-**Written but needs a real-hardware pass:** both client UIs — see
-each client's README for exactly what CI does and doesn't catch, and
-what to check by hand once you have the built app in front of you.
+## CI and builds
 
-**Not started:** TLS between clients and the server (currently plain
-HTTP — fine on a trusted home/office LAN, worth revisiting if this
-ever runs on shared/public WiFi; see docs/SECURITY.md), device
-revocation UI, mDNS auto-discovery of the server, transaction history
-screens on either client, and a launcher icon for the Android app.
+Repository workflows build the Android client and Windows client and expose build artifacts from GitHub Actions. Signing material must be supplied through the appropriate secure release configuration and must never be committed.
+
+## Security status
+
+The current design includes device pairing and signed sensitive operations. Transport security and other deployment-hardening items should be reviewed before using the system across untrusted networks.
+
+See `SECURITY.md` and `docs/SECURITY.md` for security guidance.
+
+## License
+
+No open-source license is currently included in this repository.
+
+## Ownership
+
+Maintained by **AnrixaLabs**.
