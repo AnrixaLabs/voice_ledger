@@ -1,5 +1,8 @@
 # Voice Ledger
 
+[![Android build](https://github.com/AnrixaLabs/voice_ledger/actions/workflows/android-build.yml/badge.svg)](https://github.com/AnrixaLabs/voice_ledger/actions/workflows/android-build.yml)
+[![PC build](https://github.com/AnrixaLabs/voice_ledger/actions/workflows/pc-build.yml/badge.svg)](https://github.com/AnrixaLabs/voice_ledger/actions/workflows/pc-build.yml)
+
 Voice-assisted payment and debt-entry system with Android, Windows, and self-hosted server components.
 
 Voice Ledger is designed to capture structured payment records in Armenian, confirm sensitive actions through device authentication, and store the resulting ledger on infrastructure controlled by the user.
